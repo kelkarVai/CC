@@ -1,23 +1,32 @@
-<!DOCTYPE html> 
-<html lang="en"> 
-<head> 
-    <meta charset="UTF-8"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>MEMES Matching Game</title> 
-    <link rel="stylesheet" href="styles.css"> 
-</head> 
-<body> 
-    <div class="container"> 
-        <h1>MEMES MATCHING GAME</h1> 
-        <p class="instructions"> 
-            Welcome to the Meme Matching Game!  Flip over two cards at a time and try to find all the 
-matching pairs. Be quick and remember where you saw the cards! 
-        </p> 
-        <button id="start-game">Start Game</button> 
-        <div id="game-board" class="game-board"> 
-            <!-- Cards will be generated here --> 
-        </div> 
-    </div> 
-    <script src="script.js"></script> 
-</body> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Matching Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>🧠 Image Matching Game</h1>
+
+    <p class="instructions">
+        Flip two cards and match all pairs. Try to finish in minimum moves!
+    </p>
+
+    <button id="start-game">Start Game</button>
+
+    <h2 id="timer">⏱ Time: 0s</h2>
+<h2 id="moves">🎯 Moves: 0</h2>
+
+
+
+    <h2 id="result"></h2>
+
+    <div id="game-board" class="game-board"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
 </html>
