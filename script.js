@@ -1,78 +1,135 @@
- 
-document.addEventListener('DOMContentLoaded', () => { 
-    const grid = document.querySelector('#game-board'); 
-    const startButton = document.getElementById('start-game'); 
-    let cardsChosen = []; 
-    let cardsChosenId = []; 
-    let cardsWons= []; 
- 
-    const cardArray = [ 
-        { name: 'card1', img: 'images/f1.jpg' }, 
-        { name: 'card1', img: 'images/f1.jpg' }, 
-        { name: 'card2', img: 'images/f2.webp' }, 
-        { name: 'card2', img: 'images/f2.webp' }, 
-        { name: 'card3', img: 'images/f3.webp' }, 
-        { name: 'card3', img: 'images/f3.webp' }, 
-        { name: 'card4', img: 'images/f4.webp' }, 
-        { name: 'card4', img: 'images/f4.webp' }, 
-        { name: 'card5', img: 'images/f5.jpg' }, 
-        { name: 'card5', img: 'images/f5.jpg' }, 
-        // ...add more pairs as needed 
-    ]; 
- 
-    function shuffle(array) { 
-        array.sort(() => 0.5 - Math.random()); 
-    } 
- 
-    function createBoard() { 
-        shuffle(cardArray); 
-        grid.innerHTML = ''; 
-        cardsWon = []; 
- 
-        for (let i = 0; i < cardArray.length; i++) { 
-            const card = document.createElement('img'); 
-            card.setAttribute('src', 'images/blank.png'); 
-            card.setAttribute('data-id', i); 
-            card.addEventListener('click', flipCard); 
-            grid.appendChild(card); 
-        } 
-    } 
- 
-    function flipCard() { 
-        let cardId = this.getAttribute('data-id'); 
-        if (!cardsChosenId.includes(cardId)) { 
-            cardsChosen.push(cardArray[cardId].name); 
-            cardsChosenId.push(cardId); 
-            this.setAttribute('src', cardArray[cardId].img); 
-            if (cardsChosen.length === 2) { 
-                setTimeout(checkForMatch, 500); 
-            } 
-        } 
-    } 
- 
-    function checkForMatch() { 
-        const cards = document.querySelectorAll('#game-board img'); 
-        const firstCardId = cardsChosenId[0]; 
-        const secondCardId = cardsChosenId[1]; 
- 
-        if (cardsChosen[0] === cardsChosen[1] && firstCardId !== secondCardId) { 
-            cards[firstCardId].style.visibility = 'hidden'; 
-            cards[secondCardId].style.visibility = 'hidden'; 
-            cards[firstCardId].removeEventListener('click', flipCard); 
-            cards[secondCardId].removeEventListener('click', flipCard); 
-            cardsWon.push(cardsChosen); 
-        } else { 
-            cards[firstCardId].setAttribute('src', 'images/blank.png'); 
-            cards[secondCardId].setAttribute('src', 'images/blank.png'); 
-        } 
- 
-        cardsChosen = []; 
-        cardsChosenId = []; 
- 
-        if (cardsWon.length === cardArray.length / 2) { 
-            alert('Congratulations! You found them all!'); 
-        } 
-    } 
- 
-    startButton.addEventListener('click', createBoard); 
-}); 
+document.addEventListener('DOMContentLoaded', () => {
+
+    const grid = document.querySelector('#game-board');
+    const startButton = document.getElementById('start-game');
+    const resultDisplay = document.getElementById('result');
+    const timerDisplay = document.getElementById('timer');
+    const movesDisplay = document.getElementById('moves');
+
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let matches = 0;
+    let moves = 0;
+
+    let timer = 0;
+    let interval;
+
+    const images = [
+        'images/f1.jpg',
+        'images/f2.webp',
+        'images/f3.webp',
+        'images/f4.webp',
+        'images/f5.jpg'
+    ];
+
+    function shuffle(array) {
+        return array.sort(() => 0.5 - Math.random());
+    }
+
+    function startTimer() {
+        clearInterval(interval);
+        timer = 0;
+        timerDisplay.textContent = `⏱ Time: 0s`;
+
+        interval = setInterval(() => {
+            timer++;
+            timerDisplay.textContent = `⏱ Time: ${timer}s`;
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(interval);
+    }
+
+    function createBoard() {
+        grid.innerHTML = '';
+        resultDisplay.textContent = '';
+        matches = 0;
+        moves = 0;
+
+        movesDisplay.textContent = "🎯 Moves: 0";
+
+        startTimer();
+
+        let cardArray = [...images, ...images];
+        cardArray = shuffle(cardArray);
+
+        cardArray.forEach((img) => {
+
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.dataset.image = img;
+
+            card.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-front">
+                        <img src="${img}">
+                    </div>
+                    <div class="card-back"></div>
+                </div>
+            `;
+
+            card.addEventListener('click', flipCard);
+            grid.appendChild(card);
+        });
+    }
+
+    function flipCard() {
+        if (lockBoard) return;
+        if (this === firstCard) return;
+        if (this.classList.contains('matched')) return;
+
+        this.classList.add('flip');
+
+        if (!firstCard) {
+            firstCard = this;
+            return;
+        }
+
+        secondCard = this;
+        lockBoard = true;
+
+        moves++;
+        movesDisplay.textContent = `🎯 Moves: ${moves}`;
+
+        checkMatch();
+    }
+
+    function checkMatch() {
+        const isMatch = firstCard.dataset.image === secondCard.dataset.image;
+
+        if (isMatch) {
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+
+            matches++;
+            resetTurn();
+
+            // ✅ FIXED WIN CONDITION
+            if (matches === images.length) {
+                stopTimer();
+
+                resultDisplay.textContent =
+                    `🎉 You Won! Time: ${timer}s | Moves: ${moves}`;
+            }
+
+        } else {
+            setTimeout(() => {
+                firstCard.classList.remove('flip');
+                secondCard.classList.remove('flip');
+                resetTurn();
+            }, 800);
+        }
+    }
+
+    function resetTurn() {
+        [firstCard, secondCard] = [null, null];
+        lockBoard = false;
+    }
+
+    startButton.addEventListener('click', createBoard);
+});
